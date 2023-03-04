@@ -1,0 +1,6 @@
+apiVersion: v2
+name: humhub
+description: "HumHub is a free social network software and framework built to give you the tools to make communication and collaboration easy and successful."
+type: application
+version: 0.1.0
+appVersion: "1.13.0"

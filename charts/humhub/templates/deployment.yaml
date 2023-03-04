@@ -1,0 +1,102 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "humhub.fullname" . }}
+  labels:
+    {{- include "humhub.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "humhub.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "humhub.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      automountServiceAccountToken: false
+      securityContext:
+        {{- if .Values.podSecurityContext }}
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{ else }}
+        {{- toYaml .Values.defaults.podSecurityContext | nindent 8 }}
+        {{- end }}
+      initContainers:
+      {{ if .Values.chownInitContainer.enabled }}
+          - name: set-volume-permissions
+            image: {{ .Values.chownInitContainer.image }}
+            command: ['sh', '-c', 'chown 100:101 {{- range $name, $path := .Values.defaults.mounts }}/mnt/{{ $path }} {{ end }}']
+            securityContext:
+                runAsNonRoot: false
+                runAsUser: 0
+                runAsGroup: 0
+            volumeMounts:
+                {{- range $name, $path := .Values.defaults.mounts }}
+                {{- if $path }}
+                - mountPath: /mnt/{{ $path }}
+                  name: data
+                {{- end }}
+                {{- end }}
+      {{ end }}
+      volumes:
+          - name: data
+            persistentVolumeClaim:
+                claimName: {{ include "humhub.pvcName" . }}
+                readOnly: false
+      containers:
+        - name: humhub
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+              {{- range $name, $path := .Values.defaults.mounts }}
+              {{- if $path }}
+                - mountPath: /mnt/{{ $path }}
+                  name: data
+              {{- end }}
+              {{- end }}
+          startupProbe:
+              {{ toYaml .Values.health.startupProbe | nindent 14 }}
+              httpGet:
+                  path: /
+                  port: http
+          livenessProbe:
+              {{ toYaml .Values.health.livenessProbe | nindent 14 }}
+              httpGet:
+                  path: /
+                  port: http
+          readinessProbe:
+              {{ toYaml .Values.health.readinessProbe | nindent 14 }}
+              httpGet:
+                  path: /
+                  port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
