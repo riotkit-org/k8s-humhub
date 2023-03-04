@@ -1,0 +1,22 @@
+{{ if .Values.pvc.create }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: {{ include "humhub.pvcName" . }}
+    annotations:
+        argocd.argoproj.io/sync-options: Prune=false
+    finalizers:
+        - kubernetes.io/pvc-protection
+spec:
+    accessModes:
+        - ReadWriteOnce
+    resources:
+        requests:
+            storage: {{ .Values.pvc.size }}
+    {{- if .Values.pvc.className }}
+    storageClassName: {{ .Values.pvc.className }}
+    {{- end }}
+    volumeMode: Filesystem
+    volumeName: {{ .Values.pvc.volumeName }}
+{{- end }}

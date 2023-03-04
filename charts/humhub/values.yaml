@@ -74,8 +74,23 @@ tolerations: []
 # -- Groups pods by nodes. Keep them together or separated
 affinity: {}
 
+# -- Persistence
 pvc:
+    # -- Should the Helm Chart create PersistentVolumeClaim object?
+    create: true
+
+    # -- PVC name
     name: humhub-pv
+
+    # -- PVC size (valid only if .pvc.create = true)
+    size: 10Gi
+
+    # -- PV class name (valid only if .pvc.create = true)
+    #className: local-path
+
+    # -- Existing PV name (valid only if .pvc.create = true)
+    volumeName: "humhub"
+
 
 defaults:
     podSecurityContext:
