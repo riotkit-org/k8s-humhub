@@ -36,7 +36,7 @@ spec:
       {{ if .Values.chownInitContainer.enabled }}
           - name: set-volume-permissions
             image: {{ .Values.chownInitContainer.image }}
-            command: ['sh', '-c', 'chown 100:101 {{- range $name, $path := .Values.defaults.mounts }}/mnt/{{ $path }} {{ end }}']
+            command: ['sh', '-c', 'chown 100:101 {{ range $name, $path := .Values.defaults.mounts }}/mnt/{{ $path }} {{ end }}']
             securityContext:
                 runAsNonRoot: false
                 runAsUser: 0
