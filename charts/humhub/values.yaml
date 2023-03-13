@@ -130,4 +130,6 @@ defaults:
         uploads: uploads
         assets: assets
         modules: protected/modules
+        config: protected/config
+        runtime: protected/runtime
         themes: themes
