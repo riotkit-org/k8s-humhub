@@ -46,6 +46,7 @@ spec:
                 {{- if $path }}
                 - mountPath: /mnt/{{ $path }}
                   name: data
+                  subPath: {{ $path }}
                 {{- end }}
                 {{- end }}
       {{ end }}
