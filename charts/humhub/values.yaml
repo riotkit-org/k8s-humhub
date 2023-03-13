@@ -22,6 +22,37 @@ health:
         periodSeconds: 30
         failureThreshold: 1
 
+env: []
+
+php:
+    postMaxSize: 32m
+    uploadMaxFilesize: 32m
+    maxExecutionTime: "60"
+    memoryLimit: 256m
+
+nginx:
+    clientMaxBodySize: "32m"
+    keepaliveTimeout: "65"
+
+# -- External database connectivity settings
+db:
+    user: humhub
+    host: mysql.db.svc.cluster.local
+    port: 3306
+    name: humhub
+    password:
+        secretName: humhub-db-credetials
+        secretKey: password
+
+# -- Timezone
+tz: Europe/Warsaw
+
+# -- This instance HTTP/HTTPS protocol name
+proto: https
+
+# -- This instance hostname
+host: example.org
+
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
