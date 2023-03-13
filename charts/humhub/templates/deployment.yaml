@@ -102,6 +102,10 @@ spec:
                         key: {{ .Values.db.password.secretKey }}
                         name: {{ .Values.db.password.secretName }}
 
+              # todo: move it to an optional cronjob
+              - name: HUMHUB_INTEGRITY_CHECK
+                value: "0"
+
               # Custom environment variables
               {{ range $env := .Values.env }}
               - {{ toJson $env }}
