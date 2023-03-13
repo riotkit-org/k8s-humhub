@@ -29,8 +29,6 @@ podAnnotations: {}
 podSecurityContext: {}
 
 securityContext:
-    capabilities:
-        drop: ["ALL"]
     runAsNonRoot: false
 
 service:
