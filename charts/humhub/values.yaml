@@ -41,7 +41,7 @@ db:
     port: 3306
     name: humhub
     password:
-        secretName: humhub-db-credetials
+        secretName: humhub-db-credentials
         secretKey: password
 
 # -- Timezone
