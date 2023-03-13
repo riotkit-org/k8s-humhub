@@ -28,7 +28,7 @@ php:
     postMaxSize: 32m
     uploadMaxFilesize: 32m
     maxExecutionTime: "60"
-    memoryLimit: 256m
+    memoryLimit: 256M
 
 nginx:
     clientMaxBodySize: "32m"
