@@ -104,7 +104,7 @@ spec:
 
               # todo: move it to an optional cronjob
               - name: HUMHUB_INTEGRITY_CHECK
-                value: "0"
+                value: "false"
 
               # Custom environment variables
               {{ range $env := .Values.env }}
