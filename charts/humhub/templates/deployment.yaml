@@ -116,6 +116,7 @@ spec:
               {{- if $path }}
                 - mountPath: /var/www/localhost/htdocs/{{ $path }}
                   name: data
+                  subPath: {{ $path }}
               {{- end }}
               {{- end }}
           startupProbe:
