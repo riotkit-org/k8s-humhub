@@ -67,7 +67,7 @@ spec:
           volumeMounts:
               {{- range $name, $path := .Values.defaults.mounts }}
               {{- if $path }}
-                - mountPath: /mnt/{{ $path }}
+                - mountPath: /var/www/localhost/htdocs/{{ $path }}
                   name: data
               {{- end }}
               {{- end }}
