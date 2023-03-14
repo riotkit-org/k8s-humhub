@@ -5,7 +5,7 @@ kind: CronJob
 metadata:
     name: {{ include "humhub.fullname" . }}-integrity
     labels:
-        {{- include "humhub.labels" . | nindent 4 }}
+        {{- include "humhub.labels" . | nindent 8 }}
 spec:
     concurrencyPolicy: Forbid
     failedJobsHistoryLimit: 1
