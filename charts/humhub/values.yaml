@@ -63,7 +63,7 @@ cache:
 
 jobs:
     integrity:
-        enabled: true
+        enabled: false
         schedule: "30 6 * * 6" # At 06:30 on Saturday.
 
 # -- Timezone
