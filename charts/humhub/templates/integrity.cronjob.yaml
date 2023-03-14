@@ -1,0 +1,63 @@
+{{ if .Values.jobs.integrity }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+    name: {{ include "humhub.fullname" . }}-integrity
+    labels:
+        {{- include "humhub.labels" . | nindent 4 }}
+spec:
+    concurrencyPolicy: Forbid
+    failedJobsHistoryLimit: 1
+    jobTemplate:
+        spec:
+            activeDeadlineSeconds: 3600
+            backoffLimit: 0
+            parallelism: 1
+            template:
+                spec:
+                    automountServiceAccountToken: false
+                    {{- with .Values.imagePullSecrets }}
+                    imagePullSecrets: {{ toJson . }}
+                    {{ end }}
+                    containers:
+                        - name: job
+                          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+                          imagePullPolicy: {{ .Values.image.pullPolicy }}
+                          securityContext:
+                              {{- toYaml .Values.securityContext | nindent 30 }}
+                          command:
+                              - /docker-entrypoint.sh
+                              - /bin/sh
+                              - -c
+                              {{- if .Values.image.isRootImage }}
+                              - 'su nginx -s /bin/sh -c "php ./yii integrity/run"'
+                              {{ else }}
+                              - 'php ./yii integrity/run'
+                              {{- end }}
+                          env:
+                              - name: HUMHUB_AUTO_INSTALL
+                                value: "false"
+                              {{ include "humhub.env" . | nindent 30 }}
+                          resources: {{ toJson .Values.resources }}
+                          volumeMounts:
+                              {{ include "humhub.mounts" . | nindent 30 }}
+
+                    restartPolicy: Never
+                    securityContext:
+                    {{- if .Values.podSecurityContext }}
+                        {{- toYaml .Values.podSecurityContext | nindent 24 }}
+                    {{ else }}
+                       {{- toYaml .Values.defaults.podSecurityContext | nindent 24 }}
+                    {{- end }}
+                    terminationGracePeriodSeconds: 900
+                    volumes:
+                        - name: data
+                          persistentVolumeClaim:
+                              claimName: {{ include "humhub.pvcName" . }}
+                              readOnly: false
+    schedule: {{ .Values.jobs.integrity.schedule }}
+    startingDeadlineSeconds: 100
+    successfulJobsHistoryLimit: 1
+    suspend: false
+{{ end }}

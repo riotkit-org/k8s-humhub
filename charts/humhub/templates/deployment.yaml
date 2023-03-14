@@ -62,84 +62,31 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-              - name: TZ
-                value: {{ .Values.tz }}
-
-              # HTTP
-              - name: HUMHUB_PROTO
-                value: {{ .Values.proto }}
-              - name: HUMHUB_HOST
-                value: "{{ .Values.host }}"
-
-              # NGINX
-              - name: NGINX_CLIENT_MAX_BODY_SIZE
-                value: {{ .Values.nginx.clientMaxBodySize | quote }}
-              - name: NGINX_KEEPALIVE_TIMEOUT
-                value: {{ .Values.nginx.keepaliveTimeout | quote }}
-
-              # PHP
-              - name: PHP_POST_MAX_SIZE
-                value: {{ .Values.php.postMaxSize | quote }}
-              - name: PHP_UPLOAD_MAX_FILESIZE
-                value: {{ .Values.php.uploadMaxFilesize | quote }}
-              - name: PHP_MAX_EXECUTION_TIME
-                value: {{ .Values.php.maxExecutionTime | quote }}
-              - name: PHP_MEMORY_LIMIT
-                value: {{ .Values.php.memoryLimit | quote }}
-
-              # Database
-              - name: HUMHUB_DB_HOST
-                value: {{ .Values.db.host | quote }}
-              - name: HUMHUB_DB_USER
-                value: {{ .Values.db.user | quote }}
-              - name: HUMHUB_DB_PORT
-                value: {{ .Values.db.port | quote }}
-              - name: HUMHUB_DB_NAME
-                value: {{ .Values.db.name | quote }}
-              - name: HUMHUB_DB_PASSWORD
-                valueFrom:
-                    secretKeyRef:
-                        key: {{ .Values.db.password.secretKey }}
-                        name: {{ .Values.db.password.secretName }}
-
-              # todo: move it to an optional cronjob
-              - name: HUMHUB_INTEGRITY_CHECK
-                value: "false"
-
-              # Custom environment variables
-              {{ range $env := .Values.env }}
-              - {{ toJson $env }}
-              {{ end }}
-
+              {{ include "humhub.env" . | nindent 14 }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           volumeMounts:
-              {{- range $name, $path := .Values.defaults.mounts }}
-              {{- if $path }}
-                - mountPath: /var/www/localhost/htdocs/{{ $path }}
-                  name: data
-                  subPath: {{ $path }}
-              {{- end }}
-              {{- end }}
+              {{ include "humhub.mounts" . | nindent 14 }}
+          {{ if .Values.health.enabled }}
           startupProbe:
               {{ toYaml .Values.health.startupProbe | nindent 14 }}
               httpGet:
-                  path: /
+                  path: /ping
                   port: http
           livenessProbe:
               {{ toYaml .Values.health.livenessProbe | nindent 14 }}
               httpGet:
-                  path: /
+                  path: /ping
                   port: http
           readinessProbe:
               {{ toYaml .Values.health.readinessProbe | nindent 14 }}
               httpGet:
-                  path: /
+                  path: /ping
                   port: http
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+          {{ end }}
+          resources: {{toJson .Values.resources }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

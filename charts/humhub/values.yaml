@@ -4,6 +4,7 @@ image:
   repository: ghcr.io/mriedmann/humhub-allinone
   pullPolicy: IfNotPresent
   tag: ""
+  isRootImage: true
 
 # -- Use PRIVILEGED init container to correct permissions of your volumes (NOTICE: it does not fix them recursively)
 chownInitContainer:
@@ -11,9 +12,11 @@ chownInitContainer:
     image: busybox:1.36.0-musl
 
 health:
+    # -- You can disable it temporarily in case e.g. migration takes too long
+    enabled: true
     startupProbe:
-        # defaults to 300s (5m) - give the migration script a time
-        periodSeconds: 5
+        # defaults to 900s (15m) - give the migration script a time
+        periodSeconds: 15
         failureThreshold: 60
     livenessProbe:
         periodSeconds: 55
@@ -23,7 +26,6 @@ health:
         failureThreshold: 1
 
 env: []
-
 php:
     postMaxSize: 32M
     uploadMaxFilesize: 32M
@@ -43,6 +45,26 @@ db:
     password:
         secretName: humhub-db-credentials
         secretKey: password
+
+# -- Redis is used for caching
+redis:
+    enabled: false
+    host: redis-master.redis.svc.cluster.local
+    port: 6379
+    password: ""
+
+reverseProxyAllowList:
+    # -- Allow traffic from whole cluster typically. You can limit this to your specific subnet
+    - 10.0.0.0/8
+    - 127.0.0.1
+
+cache:
+    expireTime: 3600
+
+jobs:
+    integrity:
+        enabled: true
+        schedule: "30 6 * * 6" # At 06:30 on Saturday.
 
 # -- Timezone
 tz: Europe/Warsaw
