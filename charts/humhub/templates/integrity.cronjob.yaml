@@ -1,4 +1,4 @@
-{{ if .Values.jobs.integrity }}
+{{ if .Values.jobs.integrity.enabled }}
 ---
 apiVersion: batch/v1
 kind: CronJob
